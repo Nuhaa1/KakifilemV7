@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dapatkan Pautan Video Anda</title>
+    <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6e6fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #007bff; }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
+    <script src="{% static 'js/InPagePush.js' %}" async></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register("{% static 'js/sw.js' %}").then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <img src="https://i.ibb.co/JqSwfKv/your-image.jpg" alt="Image">
+        <h1>Selamat Datang!</h1>
+        <p>Klik butang di bawah untuk mendapatkan pautan video anda.</p>
+        <form action="{% url 'countdown' %}" method="GET" style="display: none;">
+            <input type="text" id="token" name="token" value="{{ request.GET.token }}">
+            <input type="text" id="videoName" name="videoName" value="{{ request.GET.videoName }}">
+        </form>
+        <button onclick="redirectToCountdown()">Dapatkan Pautan</button>
+    </div>
+
+    <footer>
+        © Aman 2024
+    </footer>
+
+    <script>
+        function redirectToCountdown() {
+            const form = document.querySelector('form');
+            form.submit();
+        }
+    </script>
+</body>
+</html>
