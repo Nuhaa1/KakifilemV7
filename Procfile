@@ -1,1 +1,2 @@
-web: python manage.py collectstatic --noinput && gunicorn myproject.wsgi:application --bind 0.0.0.0:$PORT & python manage.py runserver_bot & wait -n
+web: python manage.py migrate && python manage.py collectstatic --no-input && gunicorn --timeout 300 --workers 2 --threads 4 --bind 0.0.0.0:$PORT myproject.wsgi
+worker: python manage.py runserver_bot

@@ -2,7 +2,7 @@ django>=5.0
 telethon
 python-dotenv
 asyncpg
-gunicorn
 psycopg2-binary
 whitenoise
+gunicorn
 gevent
