@@ -4,16 +4,6 @@
 <head>
     <title>Video Anda Sedia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="monetag" content="d032014efcdeca5ce13b99f634be4163">
-    <script src="{% static 'js/InPagePush.js' %}" async></script>
-    <script src="{% static 'js/monetag-handler.js' %}"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register("{% static 'js/sw.js' %}");
-            });
-        }
-    </script>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -152,8 +142,8 @@
             }
         }
     </style>
+    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
 </head>
-<script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132545" async data-cfasync="false"></script>
 <body>
     <div class="container">
         <img src="https://i.ibb.co/JqSwfKv/your-image.jpg" alt="Image" style="max-width: 200px; border-radius: 10px; margin-bottom: 20px;">
@@ -182,48 +172,65 @@
         const token = "{{ token }}";
         const videoName = "{{ video_name }}";
         
-        // Add countdown logic directly here
-        let timeLeft = 15;
-        const countdownDisplay = document.getElementById('countdown');
-        const getFileButton = document.getElementById('get-file');
-
-        function updateCountdown() {
-            countdownDisplay.innerHTML = `${timeLeft} saat`;
-            if (timeLeft === 0) {
-                getFileButton.removeAttribute('disabled');
-                clearInterval(countdownInterval);
-                countdownDisplay.innerHTML = 'Sedia!';
-            }
-            timeLeft--;
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const getFileButton = document.getElementById('get-file');
+            let seconds = 4;
+            countdownElement.textContent = `Tolong tunggu ${seconds} saat...`;
+            let interval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    countdownElement.textContent = "";
+                    getFileButton.disabled = false;
+                } else {
+                    countdownElement.textContent = `Tolong tunggu ${seconds} saat...`;
+                }
+            }, 1000);
         }
 
-        const countdownInterval = setInterval(updateCountdown, 1000);
-
         function redirectToTelegram() {
-            const url = `https://t.me/kakifilembot?start=${token}_${videoName}`;
-            window.location.href = url;
+            if (token) {
+                const telegramLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                console.log(`Sending token to: ${telegramLink}`);
+                window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                document.getElementById('get-file').textContent = "Sudah Dihantar";
+            }
         }
 
         function redirectToGroup() {
-            window.location.href = 'https://t.me/kakifilemreport';
+            const timestamp = new Date().toLocaleString();
+            const maskedToken = token.substring(0, 8) + '...';
+            
+            const reportMessage = 
+`⚠️ LAPORAN PAUTAN ROSAK
+
+🎬 Video: ${videoName}
+⏰ Masa: ${timestamp}
+📱 Peranti: ${navigator.platform}
+🌐 Pelayar: ${navigator.userAgent}
+
+🔑 Token: ${maskedToken}`;
+
+            navigator.clipboard.writeText(reportMessage).then(() => {
+                alert(
+                    "✨ Mesej laporan telah disalin!\n\n" +
+                    "Sila ikuti langkah-langkah ini:\n\n" +
+                    "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
+                    "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
+                    "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
+                    "Terima kasih atas kesabaran anda! 🙏"
+                );
+                window.open('https://t.me/KakifilemReport', '_blank');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                window.open('https://t.me/KakifilemReport', '_blank');
+            });
         }
 
-        window.addEventListener("load", function(){
-            var linkid = document.querySelectorAll("a");
-            var btnid = document.querySelectorAll("button");
-            var myurl = "https://kulroakonsu.net/4/5707708";
-            linkid.forEach((e) => {
-                e.addEventListener("click",() => {
-                    window.open(myurl);
-                });
-            });
-            btnid.forEach((e) => {
-                e.addEventListener("click",() => {
-                    window.open(myurl);
-                });
-            });
-        });
+        window.onload = () => {
+            startCountdown();
+        }
     </script>
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132540" async data-cfasync="false"></script>
 </body>
 </html>
