@@ -6,3 +6,4 @@ psycopg2-binary
 whitenoise
 gunicorn
 gevent
+dj-database-url
