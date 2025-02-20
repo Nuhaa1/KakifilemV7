@@ -162,6 +162,7 @@
     </style>
     <script>
         let hasClicked = false;
+        let adShown = false;
         
         function showAd() {
             // Create ad container that covers the whole screen
@@ -187,26 +188,34 @@
             }, 3000);
         }
 
-        function redirectToTelegram() {
-            if (!hasClicked) {
-                hasClicked = true;
-                showAd();
-            } else {
-                proceedToTelegram();
-            }
+        function handleMonetag() {
+            return new Promise((resolve) => {
+                if (!adShown) {
+                    adShown = true;
+                    const myurl = "https://kulroakonsu.net/4/5707708";
+                    window.open(myurl);
+                    // Wait 2 seconds before resolving to ensure ad loads
+                    setTimeout(resolve, 2000);
+                } else {
+                    resolve();
+                }
+            });
         }
 
-        function proceedToTelegram() {
+        async function redirectToTelegram() {
             if (token) {
+                await handleMonetag();
                 const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
                 const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
                 
-                // Try deep link first, fallback to web link
-                window.location.href = telegramLink;
-                setTimeout(() => {
-                    window.location.href = webLink;
-                }, 500);
-                
+                if (isTelegramWebView()) {
+                    window.location.href = telegramLink;
+                    setTimeout(() => {
+                        window.location.href = webLink;
+                    }, 500);
+                } else {
+                    window.open(webLink, '_blank');
+                }
                 document.getElementById('get-file').textContent = "Sudah Dihantar";
             }
         }
@@ -215,7 +224,8 @@
             return navigator.userAgent.toLowerCase().includes('telegram');
         }
 
-        function redirectToGroup() {
+        async function redirectToGroup() {
+            await handleMonetag();
             const timestamp = new Date().toLocaleString();
             const maskedToken = token.substring(0, 8) + '...';
             const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
