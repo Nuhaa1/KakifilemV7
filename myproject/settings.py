@@ -11,8 +11,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'your-secret-key-here'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+# Get Railway-provided URL and ensure it has proper scheme
+RAILWAY_URL = os.environ.get('RAILWAY_STATIC_URL', '')
+if RAILWAY_URL and not RAILWAY_URL.startswith(('http://', 'https://')):
+    RAILWAY_URL = f'https://{RAILWAY_URL}'
+
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = [os.getenv('RAILWAY_STATIC_URL', 'https://*.railway.app')]
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+
+# Add Railway URL to CSRF_TRUSTED_ORIGINS if available
+if RAILWAY_URL:
+    CSRF_TRUSTED_ORIGINS.extend([
+        RAILWAY_URL,
+        RAILWAY_URL.replace('https://', 'http://')
+    ])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -85,16 +100,9 @@ PORT = os.environ.get('PORT', '8000')
 if DEBUG:
     SITE_URL = f'http://127.0.0.1:{PORT}'
 else:
-    # Get Railway-provided URL
-    RAILWAY_URL = os.environ.get('RAILWAY_STATIC_URL')
     if RAILWAY_URL:
-        # Remove any trailing slashes and ensure https
-        RAILWAY_URL = RAILWAY_URL.rstrip('/')
-        if not RAILWAY_URL.startswith(('http://', 'https://')):
-            RAILWAY_URL = f'https://{RAILWAY_URL}'
         SITE_URL = RAILWAY_URL
     else:
-        # Fallback for local testing
         SITE_URL = f'http://127.0.0.1:{PORT}'
 
 # Force HTTPS in production
