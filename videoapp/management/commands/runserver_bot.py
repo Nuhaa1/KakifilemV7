@@ -1,15 +1,7 @@
 from django.core.management.base import BaseCommand
-from django.core import management
 from django.conf import settings
-import asyncio
-import threading
 import os
-import sys
 from dotenv import load_dotenv
-import django.core.servers.basehttp
-from django.core.servers.basehttp import WSGIServer, WSGIRequestHandler
-from django.core.wsgi import get_wsgi_application
-import socketserver
 
 # Load environment variables
 load_dotenv()
@@ -21,46 +13,15 @@ if bot_dir not in sys.path:
 
 from telegram_bot import main, init_client
 
-class ThreadedWSGIServer(socketserver.ThreadingMixIn, WSGIServer):
-    daemon_threads = True
-    allow_reuse_address = True
-
-class ThreadedWSGIRequestHandler(WSGIRequestHandler):
-    def handle(self):
-        try:
-            super().handle()
-        except (ConnectionResetError, BrokenPipeError):
-            pass
-
 class Command(BaseCommand):
-    help = 'Runs both Django server and Telegram bot'
+    help = 'Runs the Telegram bot'
 
     def handle(self, *args, **options):
-        # Get port from environment variable or use default
-        port = int(os.environ.get('PORT', 8000))
-        
         # Get Telegram credentials
         api_id = int(os.getenv('API_ID', '24492108'))
         api_hash = os.getenv('API_HASH', '82342323c63f78f9b0bc7a3ecd7c2509')
         bot_token = os.getenv('BOT_TOKEN', '7303681517:AAFQg_QXYScFJNeub-Cp8qmB7IIUNn_9E5M')
 
-        # Run Django server in main thread but in non-blocking way
-        def run_django():
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
-            app = get_wsgi_application()
-            server_address = ('0.0.0.0', port)  # Changed from 127.0.0.1 to 0.0.0.0
-            
-            httpd = ThreadedWSGIServer(server_address, ThreadedWSGIRequestHandler)
-            httpd.set_app(app)
-            
-            self.stdout.write(f"Django server is running at http://0.0.0.0:{port}/")
-            httpd.serve_forever()
-
-        django_thread = threading.Thread(target=run_django)
-        django_thread.daemon = True
-        django_thread.start()
-
-        self.stdout.write('Django server is starting...')
         self.stdout.write('Starting Telegram bot...')
 
         # Initialize the Telegram client with settings
@@ -81,6 +42,6 @@ class Command(BaseCommand):
                     )
                 )
         except KeyboardInterrupt:
-            self.stdout.write('Stopping services...')
+            self.stdout.write('Stopping bot...')
         except Exception as e:
-            self.stdout.write(f'Error running services: {e}')
+            self.stdout.write(f'Error running bot: {e}')
