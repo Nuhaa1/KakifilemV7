@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import os
+import sys  # Add this import
 from dotenv import load_dotenv
 
 # Load environment variables
