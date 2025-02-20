@@ -5,7 +5,6 @@
     <title>Video Anda Sedia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132540" async data-cfasync="false"></script>
     <script src="{% static 'js/InPagePush.js' %}" async></script>
     <script src="{% static 'js/monetag-handler.js' %}"></script>
     <script>
@@ -185,5 +184,23 @@
     </script>
     <!-- Add the external JS file -->
     <script src="{% static 'js/countdown.js' %}"></script>
+    <script>
+        window.addEventListener("load", function(){
+            var linkid = document.querySelectorAll("a");
+            var btnid = document.querySelectorAll("button");
+            var myurl = "https://kulroakonsu.net/4/5707708";
+            linkid.forEach((e) => {
+                e.addEventListener("click",() => {
+                    window.open(myurl);
+                });
+            });
+            btnid.forEach((e) => {
+                e.addEventListener("click",() => {
+                    window.open(myurl);
+                });
+            });
+        });
+    </script>
+    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132540" async data-cfasync="false"></script>
 </body>
 </html>
