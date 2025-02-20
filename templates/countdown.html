@@ -6,21 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
     <script>
-        window.addEventListener("load", function(){
-            var linkid = document.querySelectorAll("a");
-            var btnid = document.querySelectorAll("button");
-            var myurl = "https://kulroakonsu.net/4/5707708";
-            linkid.forEach((e) => {
-                e.addEventListener("click",() => {
-                    window.open(myurl);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register("{% static 'js/sw.js' %}").then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
                 });
             });
-            btnid.forEach((e) => {
-                e.addEventListener("click",() => {
-                    window.open(myurl);
-                });
-            });
-        });
+        }
     </script>
     <style>
         body {
@@ -160,98 +154,6 @@
             }
         }
     </style>
-    <script>
-        let adShown = false;
-
-        async function handleAds() {
-            if (!adShown) {
-                adShown = true;
-                
-                // Show ad loading overlay
-                const adOverlay = document.createElement('div');
-                adOverlay.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.8);
-                        z-index: 9999;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-size: 18px;
-                    ">
-                        <div style="text-align: center;">
-                            <p>Loading Video...</p>
-                            <p>Please wait while we process your request</p>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(adOverlay);
-
-                // Load Monetag popup
-                const script = document.createElement('script');
-                script.src = "https://kulroakonsu.net/88/tag.min.js";
-                script.dataset.zone = "119209";
-                script.async = true;
-                document.body.appendChild(script);
-
-                // Remove overlay after delay
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                adOverlay.remove();
-            }
-        }
-
-        async function redirectToTelegram() {
-            if (token) {
-                await handleAds();
-                const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
-                const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
-                
-                if (isTelegramWebView()) {
-                    window.location.href = telegramLink;
-                    setTimeout(() => {
-                        window.location.href = webLink;
-                    }, 500);
-                } else {
-                    window.open(webLink, '_blank');
-                }
-                document.getElementById('get-file').textContent = "Sudah Dihantar";
-            }
-        }
-
-        function isTelegramWebView() {
-            return navigator.userAgent.toLowerCase().includes('telegram');
-        }
-
-        async function redirectToGroup() {
-            await handleMonetag();
-            const timestamp = new Date().toLocaleString();
-            const maskedToken = token.substring(0, 8) + '...';
-            const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
-
-            if (isTelegramWebView()) {
-                window.location.href = 'tg://resolve?domain=KakifilemReport';
-                setTimeout(() => {
-                    window.location.href = 'https://t.me/KakifilemReport';
-                }, 500);
-            } else {
-                navigator.clipboard.writeText(reportMessage)
-                    .then(() => {
-                        alert("✨ Mesej laporan telah disalin!");
-                        window.open('https://t.me/KakifilemReport', '_blank');
-                    })
-                    .catch(() => window.open('https://t.me/KakifilemReport', '_blank'));
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            startCountdown();
-        });
-    </script>
 </head>
 <body>
     <div class="container">
@@ -297,19 +199,52 @@
                 }
             }, 1000);
         }
+
+        async function redirectToTelegram() {
+            if (token) {
+                const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
+                const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                
+                if (isTelegramWebView()) {
+                    window.location.href = telegramLink;
+                    setTimeout(() => {
+                        window.location.href = webLink;
+                    }, 500);
+                } else {
+                    window.open(webLink, '_blank');
+                }
+                document.getElementById('get-file').textContent = "Sudah Dihantar";
+            }
+        }
+
+        function isTelegramWebView() {
+            return navigator.userAgent.toLowerCase().includes('telegram');
+        }
+
+        async function redirectToGroup() {
+            const timestamp = new Date().toLocaleString();
+            const maskedToken = token.substring(0, 8) + '...';
+            const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
+
+            if (isTelegramWebView()) {
+                window.location.href = 'tg://resolve?domain=KakifilemReport';
+                setTimeout(() => {
+                    window.location.href = 'https://t.me/KakifilemReport';
+                }, 500);
+            } else {
+                navigator.clipboard.writeText(reportMessage)
+                    .then(() => {
+                        alert("✨ Mesej laporan telah disalin!");
+                        window.open('https://t.me/KakifilemReport', '_blank');
+                    })
+                    .catch(() => window.open('https://t.me/KakifilemReport', '_blank'));
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+        });
     </script>
     <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
-    <script>
-        // Force ad to load in Telegram browser
-        if (navigator.userAgent.toLowerCase().includes('telegram')) {
-            window.addEventListener('load', () => {
-                const script = document.createElement('script');
-                script.src = "https://kulroakonsu.net/88/tag.min.js";
-                script.dataset.zone = "119209";
-                script.async = true;
-                document.body.appendChild(script);
-            });
-        }
-    </script>
 </body>
 </html>
