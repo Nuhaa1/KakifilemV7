@@ -83,14 +83,24 @@ if DEBUG:
         }
     }
 else:
-    # Use DATABASE_URL from Railway
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
+    # Use DATABASE_URL from Railway with fallback
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        DATABASES = {
+            'default': dj_database_url.parse(database_url, conn_max_age=600)
+        }
+    else:
+        # Fallback to local database if no DATABASE_URL is set
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('PGDATABASE', 'Kakifilem'),
+                'USER': os.environ.get('PGUSER', 'postgres'),
+                'PASSWORD': os.environ.get('PGPASSWORD', 'Amanfiy77'),
+                'HOST': os.environ.get('PGHOST', 'localhost'),
+                'PORT': os.environ.get('PGPORT', '5432'),
+            }
+        }
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
