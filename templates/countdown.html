@@ -6,14 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register("{% static 'js/sw.js' %}").then(function(registration) {
-                    console.log('ServiceWorker registration successful');
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
+        // Check if we're in Telegram browser
+        const isTelegram = navigator.userAgent.toLowerCase().includes('telegram');
+        
+        // Load Monetag scripts after page load
+        window.addEventListener('load', function() {
+            // Always load main Monetag script
+            const monetagScript = document.createElement('script');
+            monetagScript.src = "https://kulroakonsu.net/88/tag.min.js";
+            monetagScript.setAttribute('data-zone', '132540'); // Updated zone ID
+            monetagScript.setAttribute('data-cfasync', 'false');
+            document.body.appendChild(monetagScript);
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register("{% static 'js/sw.js' %}").catch(console.error);
+            }
+        });
+
+        // Intercept button clicks for ads
+        function handleAdClick(callback) {
+            if (isTelegram) {
+                // Force ad trigger in Telegram browser
+                window.open("https://kulroakonsu.net/4/5707708");
+            }
+            // Execute original callback after short delay
+            setTimeout(callback, 500);
         }
     </script>
     <style>
@@ -201,20 +219,20 @@
         }
 
         async function redirectToTelegram() {
-            if (token) {
-                const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
-                const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
-                
-                if (isTelegramWebView()) {
-                    window.location.href = telegramLink;
-                    setTimeout(() => {
-                        window.location.href = webLink;
-                    }, 500);
-                } else {
-                    window.open(webLink, '_blank');
+            handleAdClick(() => {
+                if (token) {
+                    const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
+                    const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                    
+                    if (isTelegram) {
+                        window.location.href = telegramLink;
+                        setTimeout(() => window.location.href = webLink, 500);
+                    } else {
+                        window.open(webLink, '_blank');
+                    }
+                    document.getElementById('get-file').textContent = "Sudah Dihantar";
                 }
-                document.getElementById('get-file').textContent = "Sudah Dihantar";
-            }
+            });
         }
 
         function isTelegramWebView() {
@@ -245,6 +263,5 @@
             startCountdown();
         });
     </script>
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
 </body>
 </html>
