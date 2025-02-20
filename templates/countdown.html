@@ -149,13 +149,17 @@
 
         function redirectToTelegram() {
             if (token) {
-                const telegramLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
+                const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                
                 if (isTelegramWebView()) {
-                    // For Telegram browser, use special handling
+                    // For Telegram browser, try deep link first
+                    setTimeout(() => {
+                        window.location.href = webLink; // Fallback to web link
+                    }, 500);
                     window.location.href = telegramLink;
                 } else {
-                    // For other browsers, open in new tab
-                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                    window.open(webLink, '_blank', 'noopener,noreferrer');
                 }
                 document.getElementById('get-file').textContent = "Sudah Dihantar";
             }
@@ -167,25 +171,20 @@
             const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
 
             if (isTelegramWebView()) {
-                // For Telegram browser, direct link
-                window.location.href = 'https://t.me/KakifilemReport';
+                window.location.href = 'tg://resolve?domain=KakifilemReport';
+                setTimeout(() => {
+                    window.location.href = 'https://t.me/KakifilemReport';
+                }, 500);
             } else {
-                // For other browsers, copy text and open in new tab
                 navigator.clipboard.writeText(reportMessage)
                     .then(() => {
-                        alert("✨ Mesej laporan telah disalin!\n\n" +
-                              "Sila ikuti langkah-langkah ini:\n\n" +
-                              "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
-                              "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
-                              "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
-                              "Terima kasih atas kesabaran anda! 🙏");
+                        alert("✨ Mesej laporan telah disalin!");
                         window.open('https://t.me/KakifilemReport', '_blank');
                     })
                     .catch(() => window.open('https://t.me/KakifilemReport', '_blank'));
             }
         }
-        
-        // Move script to head and load earlier
+
         window.addEventListener('DOMContentLoaded', () => {
             startCountdown();
         });
