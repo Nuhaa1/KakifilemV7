@@ -9,6 +9,7 @@ import base64
 from dotenv import load_dotenv
 import os
 import asyncio
+import urllib.parse  # Add this import
 from django.conf import settings
 from database import (
     init_db, store_file_metadata, store_token,
