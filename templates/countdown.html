@@ -153,7 +153,7 @@
         }
     </style>
 </head>
-<script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132543" async data-cfasync="false"></script>
+<script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132545" async data-cfasync="false"></script>
 <body>
     <div class="container">
         <img src="https://i.ibb.co/JqSwfKv/your-image.jpg" alt="Image" style="max-width: 200px; border-radius: 10px; margin-bottom: 20px;">
@@ -179,13 +179,35 @@
     </footer>
 
     <script>
-        // Define global variables used by countdown.js
         const token = "{{ token }}";
         const videoName = "{{ video_name }}";
-    </script>
-    <!-- Add the external JS file -->
-    <script src="{% static 'js/countdown.js' %}"></script>
-    <script>
+        
+        // Add countdown logic directly here
+        let timeLeft = 15;
+        const countdownDisplay = document.getElementById('countdown');
+        const getFileButton = document.getElementById('get-file');
+
+        function updateCountdown() {
+            countdownDisplay.innerHTML = `${timeLeft} saat`;
+            if (timeLeft === 0) {
+                getFileButton.removeAttribute('disabled');
+                clearInterval(countdownInterval);
+                countdownDisplay.innerHTML = 'Sedia!';
+            }
+            timeLeft--;
+        }
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+
+        function redirectToTelegram() {
+            const url = `https://t.me/kakifilembot?start=${token}_${videoName}`;
+            window.location.href = url;
+        }
+
+        function redirectToGroup() {
+            window.location.href = 'https://t.me/kakifilemreport';
+        }
+
         window.addEventListener("load", function(){
             var linkid = document.querySelectorAll("a");
             var btnid = document.querySelectorAll("button");
