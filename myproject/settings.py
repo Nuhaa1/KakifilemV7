@@ -81,15 +81,25 @@ sys.path.append(os.path.join(BASE_DIR, 'videoapp/bot'))
 # Get port from environment variable
 PORT = os.environ.get('PORT', '8000')
 
-# Site URL settings - ensure it has proper scheme and port
+# Site URL settings for Railway
 if DEBUG:
     SITE_URL = f'http://127.0.0.1:{PORT}'
 else:
-    SITE_URL = os.environ.get('RAILWAY_STATIC_URL')
-    if not SITE_URL:
-        SITE_URL = f'http://0.0.0.0:{PORT}'
-    if not SITE_URL.startswith(('http://', 'https://')):
-        SITE_URL = f'https://{SITE_URL}'
+    # Get Railway-provided URL
+    RAILWAY_URL = os.environ.get('RAILWAY_STATIC_URL')
+    if RAILWAY_URL:
+        # Remove any trailing slashes and ensure https
+        RAILWAY_URL = RAILWAY_URL.rstrip('/')
+        if not RAILWAY_URL.startswith(('http://', 'https://')):
+            RAILWAY_URL = f'https://{RAILWAY_URL}'
+        SITE_URL = RAILWAY_URL
+    else:
+        # Fallback for local testing
+        SITE_URL = f'http://127.0.0.1:{PORT}'
+
+# Force HTTPS in production
+if not DEBUG and not SITE_URL.startswith('https://'):
+    SITE_URL = SITE_URL.replace('http://', 'https://', 1)
 
 # Telegram Bot Settings
 TELEGRAM_API_ID = os.environ.get('API_ID')
