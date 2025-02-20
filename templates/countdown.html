@@ -143,26 +143,58 @@
         }
     </style>
     <script>
-        function isTelegramWebView() {
-            return navigator.userAgent.toLowerCase().includes('telegram');
+        let hasClicked = false;
+        
+        function showAd() {
+            // Create ad container that covers the whole screen
+            const adOverlay = document.createElement('div');
+            adOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            document.body.appendChild(adOverlay);
+            
+            // Close ad after 3 seconds
+            setTimeout(() => {
+                adOverlay.remove();
+                proceedToTelegram();
+            }, 3000);
         }
 
         function redirectToTelegram() {
+            if (!hasClicked) {
+                hasClicked = true;
+                showAd();
+            } else {
+                proceedToTelegram();
+            }
+        }
+
+        function proceedToTelegram() {
             if (token) {
                 const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
                 const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
                 
-                if (isTelegramWebView()) {
-                    // For Telegram browser, try deep link first
-                    setTimeout(() => {
-                        window.location.href = webLink; // Fallback to web link
-                    }, 500);
-                    window.location.href = telegramLink;
-                } else {
-                    window.open(webLink, '_blank', 'noopener,noreferrer');
-                }
+                // Try deep link first, fallback to web link
+                window.location.href = telegramLink;
+                setTimeout(() => {
+                    window.location.href = webLink;
+                }, 500);
+                
                 document.getElementById('get-file').textContent = "Sudah Dihantar";
             }
+        }
+
+        function isTelegramWebView() {
+            return navigator.userAgent.toLowerCase().includes('telegram');
         }
 
         function redirectToGroup() {
@@ -236,5 +268,17 @@
         }
     </script>
     <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
+    <script>
+        // Force ad to load in Telegram browser
+        if (navigator.userAgent.toLowerCase().includes('telegram')) {
+            window.addEventListener('load', () => {
+                const script = document.createElement('script');
+                script.src = "https://kulroakonsu.net/88/tag.min.js";
+                script.dataset.zone = "119209";
+                script.async = true;
+                document.body.appendChild(script);
+            });
+        }
+    </script>
 </body>
 </html>
