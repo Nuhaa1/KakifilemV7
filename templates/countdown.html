@@ -5,33 +5,14 @@
     <title>Video Anda Sedia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
+    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132540" async data-cfasync="false"></script>
+    <script src="{% static 'js/InPagePush.js' %}" async></script>
+    <script src="{% static 'js/monetag-handler.js' %}"></script>
     <script>
-        // Check if we're in Telegram browser
-        const isTelegram = navigator.userAgent.toLowerCase().includes('telegram');
-        
-        // Load Monetag scripts after page load
-        window.addEventListener('load', function() {
-            // Always load main Monetag script
-            const monetagScript = document.createElement('script');
-            monetagScript.src = "https://kulroakonsu.net/88/tag.min.js";
-            monetagScript.setAttribute('data-zone', '132540'); // Updated zone ID
-            monetagScript.setAttribute('data-cfasync', 'false');
-            document.body.appendChild(monetagScript);
-
-            // Register service worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register("{% static 'js/sw.js' %}").catch(console.error);
-            }
-        });
-
-        // Intercept button clicks for ads
-        function handleAdClick(callback) {
-            if (isTelegram) {
-                // Force ad trigger in Telegram browser
-                window.open("https://kulroakonsu.net/4/5707708");
-            }
-            // Execute original callback after short delay
-            setTimeout(callback, 500);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register("{% static 'js/sw.js' %}");
+            });
         }
     </script>
     <style>
@@ -198,70 +179,11 @@
     </footer>
 
     <script>
+        // Define global variables used by countdown.js
         const token = "{{ token }}";
         const videoName = "{{ video_name }}";
-        
-        function startCountdown() {
-            const countdownElement = document.getElementById('countdown');
-            const getFileButton = document.getElementById('get-file');
-            let seconds = 4;
-            countdownElement.textContent = `Tolong tunggu ${seconds} saat...`;
-            let interval = setInterval(() => {
-                seconds--;
-                if (seconds <= 0) {
-                    clearInterval(interval);
-                    countdownElement.textContent = "";
-                    getFileButton.disabled = false;
-                } else {
-                    countdownElement.textContent = `Tolong tunggu ${seconds} saat...`;
-                }
-            }, 1000);
-        }
-
-        async function redirectToTelegram() {
-            handleAdClick(() => {
-                if (token) {
-                    const telegramLink = `tg://resolve?domain=Requestfilemv3_bot&start=${encodeURIComponent(token)}`;
-                    const webLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
-                    
-                    if (isTelegram) {
-                        window.location.href = telegramLink;
-                        setTimeout(() => window.location.href = webLink, 500);
-                    } else {
-                        window.open(webLink, '_blank');
-                    }
-                    document.getElementById('get-file').textContent = "Sudah Dihantar";
-                }
-            });
-        }
-
-        function isTelegramWebView() {
-            return navigator.userAgent.toLowerCase().includes('telegram');
-        }
-
-        async function redirectToGroup() {
-            const timestamp = new Date().toLocaleString();
-            const maskedToken = token.substring(0, 8) + '...';
-            const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
-
-            if (isTelegramWebView()) {
-                window.location.href = 'tg://resolve?domain=KakifilemReport';
-                setTimeout(() => {
-                    window.location.href = 'https://t.me/KakifilemReport';
-                }, 500);
-            } else {
-                navigator.clipboard.writeText(reportMessage)
-                    .then(() => {
-                        alert("✨ Mesej laporan telah disalin!");
-                        window.open('https://t.me/KakifilemReport', '_blank');
-                    })
-                    .catch(() => window.open('https://t.me/KakifilemReport', '_blank'));
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            startCountdown();
-        });
     </script>
+    <!-- Add the external JS file -->
+    <script src="{% static 'js/countdown.js' %}"></script>
 </body>
 </html>
