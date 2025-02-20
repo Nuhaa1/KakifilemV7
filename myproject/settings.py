@@ -78,8 +78,10 @@ else:
 # Add the bot directory to Python path
 sys.path.append(os.path.join(BASE_DIR, 'videoapp/bot'))
 
-# Site URL settings
-SITE_URL = os.environ.get('RAILWAY_STATIC_URL')
+# Site URL settings - ensure it has proper scheme
+SITE_URL = os.environ.get('RAILWAY_STATIC_URL', 'http://127.0.0.1:8000')
+if not SITE_URL.startswith(('http://', 'https://')):
+    SITE_URL = f'https://{SITE_URL}'
 
 # Telegram Bot Settings
 TELEGRAM_API_ID = os.environ.get('API_ID')

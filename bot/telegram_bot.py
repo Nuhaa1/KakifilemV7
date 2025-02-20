@@ -181,12 +181,9 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                     logger.error(f"Error handling document message: {e}")
                     await event.reply('Failed to store file metadata.')
 
-            elif event.message.text:
+            elif event.message.text and not event.message.text.startswith('/'):
                 try:
-                    if event.message.text.startswith('/'):
-                        logger.debug(f"Ignoring command: {event.message.text}")
-                        return
-
+                    await update_user_activity(event.sender_id)
                     text = normalize_keyword(event.message.text.lower().strip())
                     keyword_list = split_keywords(text)
                     logger.debug(f"Received text message: {text}")
@@ -208,38 +205,39 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                         header = f"{total_results} Results for '{text}'"
                         buttons = []
                         for id, caption, file_name in video_results:
-                            token = await store_token(str(id))
-                            if token:
-                                import urllib.parse
-                                safe_video_name = urllib.parse.quote(file_name, safe='')
-                                safe_token = urllib.parse.quote(token, safe='')
-                                website_link = f"{settings.SITE_URL}/?token={safe_token}&videoName={safe_video_name}"
-                                buttons.append([Button.url(file_name or caption or "Unknown File", website_link)])
+                            try:
+                                token = await store_token(str(id))
+                                if token:
+                                    safe_video_name = urllib.parse.quote(file_name)
+                                    safe_token = urllib.parse.quote(token)
+                                    
+                                    # Ensure site URL is properly formatted
+                                    base_url = settings.SITE_URL.rstrip('/')
+                                    if not base_url.startswith(('http://', 'https://')):
+                                        base_url = f'https://{base_url}'
+                                        
+                                    website_link = f"{base_url}/?token={safe_token}&videoName={safe_video_name}"
+                                    logger.debug(f"Generated URL: {website_link}")
+                                    
+                                    # Format display name
+                                    display_name = file_name.replace('.mp4', '').replace('.', ' ')
+                                    if len(display_name) > 64:  # Telegram button text limit
+                                        display_name = display_name[:61] + '...'
+                                        
+                                    buttons.append([Button.url(display_name, website_link)])
+                            except Exception as e:
+                                logger.error(f"Error creating button for file {file_name}: {e}")
+                                continue
                         
-                        logger.debug(f"Generated buttons: {buttons}")
-
-                        # Pagination Buttons
-                        pagination_buttons = []
-                        start_page = max(1, page - 2)
-                        end_page = min(total_pages, start_page + 4)
-
-                        for p in range(start_page, end_page + 1):
-                            if p == page:
-                                pagination_buttons.append(Button.inline(f"[{p}]", f"ignore|{text}|{p}"))
-                            else:
-                                pagination_buttons.append(Button.inline(str(p), f"page|{text}|{p}"))
-
-                        if page > 1:
-                            pagination_buttons.insert(0, Button.inline("Prev", f"page|{text}|{page - 1}"))
-                        if page < total_pages:
-                            pagination_buttons.append(Button.inline("Next", f"page|{text}|{page + 1}"))
-
-                        buttons.append(pagination_buttons)
-                        buttons.append([Button.inline("First Page", f"page|{text}|1"), Button.inline("Last Page", f"page|{total_pages}")])
-
-                        await event.respond(header, buttons=buttons)
+                        if buttons:
+                            try:
+                                await event.respond(header, buttons=buttons)
+                            except Exception as e:
+                                logger.error(f"Error sending message with buttons: {e}")
+                                await event.reply("Error displaying results. Please try again.")
+                        else:
+                            await event.reply('No valid results to display.')
                     else:
-                        logger.debug(f"No matching video files found for keyword '{text}'.")
                         await event.reply('Movies yang anda cari belum ada boleh request di @Request67_bot.')
                 except Exception as e:
                     logger.error(f"Error handling text message: {e}")
