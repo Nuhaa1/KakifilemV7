@@ -5,3 +5,4 @@ asyncpg
 gunicorn
 psycopg2-binary
 whitenoise
+gevent

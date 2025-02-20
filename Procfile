@@ -1,2 +1,1 @@
-web: gunicorn myproject.wsgi:application 
-worker: python manage.py runserver_bot 
+web: python manage.py collectstatic --noinput && gunicorn myproject.wsgi --worker-class=gevent --workers=1 --threads=4 --worker-connections=1000 --bind=0.0.0.0:$PORT & python manage.py runserver_bot & wait -n
