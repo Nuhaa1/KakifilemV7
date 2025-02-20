@@ -36,6 +36,9 @@ class Command(BaseCommand):
     help = 'Runs both Django server and Telegram bot'
 
     def handle(self, *args, **options):
+        # Get port from environment variable or use default
+        port = int(os.environ.get('PORT', 8000))
+        
         # Get Telegram credentials
         api_id = int(os.getenv('API_ID', '24492108'))
         api_hash = os.getenv('API_HASH', '82342323c63f78f9b0bc7a3ecd7c2509')
@@ -45,12 +48,12 @@ class Command(BaseCommand):
         def run_django():
             os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
             app = get_wsgi_application()
-            server_address = ('127.0.0.1', 8000)
+            server_address = ('0.0.0.0', port)  # Changed from 127.0.0.1 to 0.0.0.0
             
             httpd = ThreadedWSGIServer(server_address, ThreadedWSGIRequestHandler)
             httpd.set_app(app)
             
-            self.stdout.write(f"Django server is running at http://{server_address[0]}:{server_address[1]}/")
+            self.stdout.write(f"Django server is running at http://0.0.0.0:{port}/")
             httpd.serve_forever()
 
         django_thread = threading.Thread(target=run_django)
