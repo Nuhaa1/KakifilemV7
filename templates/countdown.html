@@ -142,7 +142,54 @@
             }
         }
     </style>
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
+    <script>
+        function isTelegramWebView() {
+            return navigator.userAgent.toLowerCase().includes('telegram');
+        }
+
+        function redirectToTelegram() {
+            if (token) {
+                const telegramLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
+                if (isTelegramWebView()) {
+                    // For Telegram browser, use special handling
+                    window.location.href = telegramLink;
+                } else {
+                    // For other browsers, open in new tab
+                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                }
+                document.getElementById('get-file').textContent = "Sudah Dihantar";
+            }
+        }
+
+        function redirectToGroup() {
+            const timestamp = new Date().toLocaleString();
+            const maskedToken = token.substring(0, 8) + '...';
+            const reportMessage = `⚠️ LAPORAN PAUTAN ROSAK\n\n🎬 Video: ${videoName}\n⏰ Masa: ${timestamp}\n📱 Peranti: ${navigator.platform}\n🌐 Pelayar: ${navigator.userAgent}\n\n🔑 Token: ${maskedToken}`;
+
+            if (isTelegramWebView()) {
+                // For Telegram browser, direct link
+                window.location.href = 'https://t.me/KakifilemReport';
+            } else {
+                // For other browsers, copy text and open in new tab
+                navigator.clipboard.writeText(reportMessage)
+                    .then(() => {
+                        alert("✨ Mesej laporan telah disalin!\n\n" +
+                              "Sila ikuti langkah-langkah ini:\n\n" +
+                              "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
+                              "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
+                              "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
+                              "Terima kasih atas kesabaran anda! 🙏");
+                        window.open('https://t.me/KakifilemReport', '_blank');
+                    })
+                    .catch(() => window.open('https://t.me/KakifilemReport', '_blank'));
+            }
+        }
+        
+        // Move script to head and load earlier
+        window.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
@@ -188,49 +235,7 @@
                 }
             }, 1000);
         }
-
-        function redirectToTelegram() {
-            if (token) {
-                const telegramLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
-                console.log(`Sending token to: ${telegramLink}`);
-                window.open(telegramLink, '_blank', 'noopener,noreferrer');
-                document.getElementById('get-file').textContent = "Sudah Dihantar";
-            }
-        }
-
-        function redirectToGroup() {
-            const timestamp = new Date().toLocaleString();
-            const maskedToken = token.substring(0, 8) + '...';
-            
-            const reportMessage = 
-`⚠️ LAPORAN PAUTAN ROSAK
-
-🎬 Video: ${videoName}
-⏰ Masa: ${timestamp}
-📱 Peranti: ${navigator.platform}
-🌐 Pelayar: ${navigator.userAgent}
-
-🔑 Token: ${maskedToken}`;
-
-            navigator.clipboard.writeText(reportMessage).then(() => {
-                alert(
-                    "✨ Mesej laporan telah disalin!\n\n" +
-                    "Sila ikuti langkah-langkah ini:\n\n" +
-                    "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
-                    "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
-                    "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
-                    "Terima kasih atas kesabaran anda! 🙏"
-                );
-                window.open('https://t.me/KakifilemReport', '_blank');
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                window.open('https://t.me/KakifilemReport', '_blank');
-            });
-        }
-
-        window.onload = () => {
-            startCountdown();
-        }
     </script>
+    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
 </body>
 </html>
