@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --worker-class=gevent --workers=2 --threads=4 --timeout=0 --bind=0.0.0.0:$PORT myproject.wsgi:application & python manage.py runserver_bot & wait -n
+web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn myproject.wsgi:application --bind=0.0.0.0:$PORT --workers=2 --threads=4 --worker-class=gevent --timeout=0 --keep-alive=60 --log-level=info --max-requests=1000 --preload --access-logfile=- --error-logfile=-

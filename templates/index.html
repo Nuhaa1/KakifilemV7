@@ -7,42 +7,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #e6e6fa;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e6e6fa, #b4a7d6);
+            min-height: 100vh;
             margin: 0;
+            display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .container {
+            max-width: 500px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
         }
-        h1 { color: #007bff; }
-        img {
-            max-width: 100%;
-            height: auto;
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        h1 { 
+            color: #4a4a4a;
+            font-size: 2em;
             margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 15px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         button {
-            background-color: #007bff;
-            color: #fff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            font-weight: 600;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #555;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+            width: 100%;
+            padding: 20px 0;
+            background: rgba(255,255,255,0.1);
+        }
+        @media (max-width: 480px) {
+            .container {
+                width: 85%;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            button {
+                width: 100%;
+                margin-top: 15px;
+            }
         }
     </style>
     <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
