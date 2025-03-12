@@ -82,6 +82,16 @@
                 margin-top: 15px;
             }
         }
+        #countdown {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            background: linear-gradient(45deg, #4ff, #4f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(79, 255, 255, 0.3);
+            animation: glow 1s ease-in-out infinite alternate;
+        }
     </style>
     <script src="{% static 'js/InPagePush.js' %}" async></script>
     <script src="{% static 'js/monetag-handler.js' %}" async></script>
@@ -101,12 +111,11 @@
     <div class="container">
         <img src="https://i.ibb.co/JqSwfKv/your-image.jpg" alt="Image">
         <h1>Selamat Datang!</h1>
-        <p>Klik butang di bawah untuk mendapatkan pautan video anda.</p>
+        <p>Anda akan dialihkan secara automatik dalam <span id="countdown">7</span> saat...</p>
         <form action="{% url 'countdown' %}" method="GET" style="display: none;">
             <input type="text" id="token" name="token" value="{{ request.GET.token }}">
             <input type="text" id="videoName" name="videoName" value="{{ request.GET.videoName }}">
         </form>
-        <button onclick="redirectToCountdown()">Dapatkan Pautan</button>
     </div>
 
     <footer>
@@ -114,9 +123,20 @@
     </footer>
 
     <script>
-        function redirectToCountdown() {
+        window.onload = function() {
+            let seconds = 7;
+            const countdownElement = document.getElementById('countdown');
             const form = document.querySelector('form');
-            form.submit();
+            
+            const timer = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    form.submit();
+                }
+            }, 1000);
         }
     </script>
 </body>

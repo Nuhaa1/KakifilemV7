@@ -343,11 +343,10 @@ async def main(api_id=None, api_hash=None, bot_token=None):
 
                         if buttons:
                             try:
-                                if not user_is_premium:
-                                    footer_message = "\n\n💫 Get Premium to download files instantly!"
-                                    await event.respond(header + footer_message, buttons=buttons)
-                                else:
+                                if user_is_premium:
                                     await event.respond(header + "\n\n✨ Premium User: Click to download instantly!", buttons=buttons)
+                                else:
+                                    await event.respond(header, buttons=buttons)
                             except Exception as e:
                                 logger.error(f"Error sending message with buttons: {e}")
                                 await event.reply("Error displaying results. Please try again.")
