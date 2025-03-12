@@ -20,6 +20,7 @@ from userdb import (
     init_user_db, add_user, get_all_users, 
     get_user_count, update_user_activity, get_active_users_count
 )
+from premium import init_premium_db, is_premium, add_or_renew_premium, get_premium_status
 
 # Load environment variables from .env file
 load_dotenv()
@@ -63,6 +64,7 @@ async def main(api_id=None, api_hash=None, bot_token=None):
     # Initialize database
     await init_db()
     await init_user_db()
+    await init_premium_db()
     
     # Start bot if not already started
     if not client.is_connected():
@@ -139,9 +141,67 @@ async def main(api_id=None, api_hash=None, bot_token=None):
             await event.respond('Hantar movies apa yang anda mahu.')
             logger.warning("No token provided.")
 
+    @client.on(events.NewMessage(pattern='/premium'))
+    async def premium_command(event):
+        """Handle premium status check"""
+        status = await get_premium_status(event.sender_id)
+        if status:
+            if status["is_premium"]:
+                message = (
+                    "🌟 Premium Status 🌟\n\n"
+                    "✅ Active Premium Member\n"
+                    f"⏳ Days Remaining: {status['days_left']}\n"
+                    f"📅 Expires: {status['expiry_date'].strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                    "Premium Benefits:\n"
+                    "• Unlimited downloads\n"
+                    "• Priority support\n"
+                    "• Early access to new features"
+                )
+            else:
+                message = (
+                    "⭐ Premium Membership ⭐\n\n"
+                    "❌ You don't have an active premium membership\n\n"
+                    "Benefits of Premium:\n"
+                    "• Unlimited downloads\n"
+                    "• Priority support\n"
+                    "• Early access to new features\n\n"
+                    "To purchase premium, contact @admin"
+                )
+            await event.respond(message)
+            
+    @client.on(events.NewMessage(pattern='/addpremium'))
+    async def add_premium_command(event):
+        """Handle adding premium users (admin only)"""
+        if event.sender_id not in AUTHORIZED_USER_IDS:
+            await event.reply("You are not authorized to use this command.")
+            return
+            
+        try:
+            args = event.message.text.split()
+            if len(args) != 3:
+                await event.reply("Usage: /addpremium <user_id> <days>")
+                return
+                
+            user_id = int(args[1])
+            days = int(args[2])
+            
+            if await add_or_renew_premium(user_id, days):
+                await event.reply(f"Successfully added/renewed premium for user {user_id} for {days} days.")
+            else:
+                await event.reply("Failed to add/renew premium membership.")
+        except ValueError:
+            await event.reply("Invalid user ID or number of days.")
+        except Exception as e:
+            logger.error(f"Error in add_premium_command: {e}")
+            await event.reply("An error occurred while processing your request.")
+
     @client.on(events.NewMessage)
     async def handle_messages(event):
         await update_user_activity(event.sender_id)
+        
+        # Check if user is premium for certain operations
+        user_is_premium = await is_premium(event.sender_id)
+        
         if event.is_private:
             if event.message.document:
                 try:
@@ -190,7 +250,7 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                     logger.debug(f"Received text message: {text}")
 
                     page = 1  # Default to first page
-                    page_size = 10  # Number of results per page
+                    page_size = 20 if user_is_premium else 10  # Different page sizes for premium users
                     offset = (page - 1) * page_size
 
                     db_results = await search_files(keyword_list, page_size, offset)
@@ -232,7 +292,12 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                         
                         if buttons:
                             try:
-                                await event.respond(header, buttons=buttons)
+                                if not user_is_premium:
+                                    # Add premium upsell message for non-premium users
+                                    footer_message = "\n\n💫 Get Premium for more results and features!"
+                                    await event.respond(header + footer_message, buttons=buttons)
+                                else:
+                                    await event.respond(header, buttons=buttons)
                             except Exception as e:
                                 logger.error(f"Error sending message with buttons: {e}")
                                 await event.reply("Error displaying results. Please try again.")
