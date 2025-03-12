@@ -25,8 +25,17 @@ from premium import init_premium_db, is_premium, add_or_renew_premium, get_premi
 # Load environment variables from .env file
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Update logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%H:%M:%S'
+)
+
+# Configure Telethon's logger to only show warnings and errors
+telethon_logger = logging.getLogger('telethon')
+telethon_logger.setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # Initialize client as None
@@ -82,9 +91,10 @@ async def send_file_directly(client, chat_id, file_info):
             file=document,
             caption=formatted_caption
         )
+        logger.info(f"File {file_name} sent successfully.")
         return True
     except Exception as e:
-        logger.error(f"Error sending file directly: {e}")
+        logger.error(f"Failed to send file {file_name}: {e}")
         return False
 
 async def main(api_id=None, api_hash=None, bot_token=None):
@@ -269,9 +279,10 @@ async def main(api_id=None, api_hash=None, bot_token=None):
 
                     logger.debug(f"Inserting file metadata: id={id}, access_hash={access_hash}, file_reference={file_reference}, mime_type={mime_type}, caption={caption}, keywords={keywords}, file_name={file_name}")
                     await store_file_metadata(id, access_hash, file_reference, mime_type, caption, keywords, file_name)
+                    logger.info(f"Successfully stored metadata for {file_name}")
                     await event.reply('File metadata stored.')
                 except Exception as e:
-                    logger.error(f"Error handling document message: {e}")
+                    logger.error(f"Failed to store metadata for {file_name}: {e}")
                     await event.reply('Failed to store file metadata.')
 
             elif event.message.text and not event.message.text.startswith('/'):
@@ -295,6 +306,7 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                     logger.debug(f"Filtered video results: {video_results}")
 
                     if video_results:
+                        logger.info(f"Found {len(video_results)} results for search: {text}")
                         header = f"{total_results} Results for '{text}'"
                         buttons = []
                         
@@ -342,6 +354,7 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                         else:
                             await event.reply('No valid results to display.')
                     else:
+                        logger.info(f"No results found for search: {text}")
                         await event.reply('Movies yang anda cari belum ada boleh request di @Request67_bot.')
                 except Exception as e:
                     logger.error(f"Error handling text message: {e}")
