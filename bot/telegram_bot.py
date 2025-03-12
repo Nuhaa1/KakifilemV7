@@ -55,6 +55,38 @@ def split_keywords(keyword):
     # Split the normalized keyword into individual words
     return keyword.split()
 
+async def send_file_directly(client, chat_id, file_info):
+    """Helper function to send file directly to user"""
+    try:
+        id = file_info['id']
+        access_hash = file_info['access_hash']
+        file_reference = file_info['file_reference']
+        mime_type = file_info['mime_type']
+        file_name = file_info['file_name']
+
+        formatted_caption = file_name.replace(" ", ".").replace("@", "")
+
+        document = Document(
+            id=int(id),
+            access_hash=int(access_hash),
+            file_reference=bytes(file_reference),
+            date=None,
+            mime_type=mime_type,
+            size=None,
+            dc_id=None,
+            attributes=[DocumentAttributeFilename(file_name=file_name)]
+        )
+
+        await client.send_file(
+            chat_id,
+            file=document,
+            caption=formatted_caption
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Error sending file directly: {e}")
+        return False
+
 async def main(api_id=None, api_hash=None, bot_token=None):
     """Main bot function that sets up event handlers and runs the bot"""
     global client
@@ -265,39 +297,45 @@ async def main(api_id=None, api_hash=None, bot_token=None):
                     if video_results:
                         header = f"{total_results} Results for '{text}'"
                         buttons = []
+                        
+                        # Check if user is premium
+                        user_is_premium = await is_premium(event.sender_id)
+                        
                         for id, caption, file_name in video_results:
                             try:
-                                token = await store_token(str(id))
-                                if token:
-                                    safe_video_name = urllib.parse.quote(file_name)
-                                    safe_token = urllib.parse.quote(token)
-                                    
-                                    # Ensure site URL is properly formatted
-                                    base_url = settings.SITE_URL.rstrip('/')
-                                    if not base_url.startswith(('http://', 'https://')):
-                                        base_url = f'https://{base_url}'
-                                        
-                                    website_link = f"{base_url}/?token={safe_token}&videoName={safe_video_name}"
-                                    logger.debug(f"Generated URL: {website_link}")
-                                    
-                                    # Format display name
+                                if user_is_premium:
+                                    # For premium users: Create callback button to send file directly
                                     display_name = file_name.replace('.mp4', '').replace('.', ' ')
-                                    if len(display_name) > 64:  # Telegram button text limit
+                                    if len(display_name) > 64:
                                         display_name = display_name[:61] + '...'
+                                    buttons.append([Button.inline(f"📥 {display_name}", f"send|{id}")])
+                                else:
+                                    # For regular users: Create website link button (existing code)
+                                    token = await store_token(str(id))
+                                    if token:
+                                        safe_video_name = urllib.parse.quote(file_name)
+                                        safe_token = urllib.parse.quote(token)
+                                        base_url = settings.SITE_URL.rstrip('/')
+                                        if not base_url.startswith(('http://', 'https://')):
+                                            base_url = f'https://{base_url}'
+                                        website_link = f"{base_url}/?token={safe_token}&videoName={safe_video_name}"
                                         
-                                    buttons.append([Button.url(display_name, website_link)])
+                                        display_name = file_name.replace('.mp4', '').replace('.', ' ')
+                                        if len(display_name) > 64:
+                                            display_name = display_name[:61] + '...'
+                                        
+                                        buttons.append([Button.url(display_name, website_link)])
                             except Exception as e:
                                 logger.error(f"Error creating button for file {file_name}: {e}")
                                 continue
-                        
+
                         if buttons:
                             try:
                                 if not user_is_premium:
-                                    # Add premium upsell message for non-premium users
-                                    footer_message = "\n\n💫 Get Premium for more results and features!"
+                                    footer_message = "\n\n💫 Get Premium to download files instantly!"
                                     await event.respond(header + footer_message, buttons=buttons)
                                 else:
-                                    await event.respond(header, buttons=buttons)
+                                    await event.respond(header + "\n\n✨ Premium User: Click to download instantly!", buttons=buttons)
                             except Exception as e:
                                 logger.error(f"Error sending message with buttons: {e}")
                                 await event.reply("Error displaying results. Please try again.")
@@ -315,7 +353,25 @@ async def main(api_id=None, api_hash=None, bot_token=None):
             data = event.data.decode('utf-8')
             logger.debug(f"Callback query data: {data}")
 
-            if data.startswith("page|"):
+            if data.startswith("send|"):
+                # Handle direct file sending for premium users
+                user_is_premium = await is_premium(event.sender_id)
+                if not user_is_premium:
+                    await event.answer("This feature is only available to premium users!", show_alert=True)
+                    return
+
+                file_id = data.split("|")[1]
+                file_info = await get_file_by_id(str(file_id))
+                
+                if file_info:
+                    await event.answer("Sending file...")
+                    success = await send_file_directly(client, event.sender_id, file_info)
+                    if not success:
+                        await event.respond("Failed to send file. Please try again.")
+                else:
+                    await event.answer("File not found!", show_alert=True)
+            
+            elif data.startswith("page|"):
                 parts = data.split("|")
                 if len(parts) < 3:
                     await event.answer("Invalid page data")
